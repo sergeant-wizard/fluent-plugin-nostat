@@ -1,2 +1,2 @@
 # fluent-plugin-nostat
-json output of linux system resource usage
+fluent plugin for system resource monitoring whithout dstat
