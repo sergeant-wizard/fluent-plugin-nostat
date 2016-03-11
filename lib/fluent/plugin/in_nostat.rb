@@ -1,7 +1,6 @@
 module Fluent
-  class BcacheInput < Input
-  class Nostat
-    Plugin.register_input('bcache', self)
+  class NostatInput < Input
+    Plugin.register_input('nostat', self)
 
     @@CPU_STAT = "/proc/stat"
     @@MEM_STAT = "/proc/meminfo"
@@ -28,7 +27,7 @@ module Fluent
       super
 
       if !@tag
-        @tag = @tag_prefix + `hostname`.strip.split('.')[0].strip + ".bcache"
+        @tag = @tag_prefix + `hostname`.strip.split('.')[0].strip + ".nostat"
         log.info "tag=", @tag
         #        raise ConfigError, "'tag' option is required on df input"
       end
@@ -46,19 +45,6 @@ module Fluent
     def shutdown
       @finished = true
       @thread.join
-    end
-
-    def get_stats (path)
-      res = {}
-
-      bcache = path.split('/')[-3]
-      res[bcache] = {}
-      res[bcache]["cache_hits"] = File.read(path + "/cache_hits").strip.to_i
-      res[bcache]["cache_misses"] = File.read(path + "/cache_misses").strip.to_i
-
-      puts res
-
-      res
     end
 
     def get_cpu_stat
@@ -163,8 +149,8 @@ module Fluent
 
           router.emit(@tag, time, record)
         rescue => e
-          log.error "bcache failed to emit", :error => e.to_s, :error_class => e.class.to_s, :tag => tag
-          log.error "bcache to run or shutdown child process", :error => $!.to_s, :error_class => $!.class.to_s
+          log.error "nostat failed to emit", :error => e.to_s, :error_class => e.class.to_s, :tag => tag
+          log.error "nostat to run or shutdown child process", :error => $!.to_s, :error_class => $!.class.to_s
           log.warn_backtrace $!.backtrace
 
         end
