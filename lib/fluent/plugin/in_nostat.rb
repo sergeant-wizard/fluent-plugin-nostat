@@ -29,7 +29,6 @@ module Fluent
       if !@tag
         @tag = @tag_prefix + `hostname`.strip.split('.')[0].strip + ".nostat"
         log.info "tag=", @tag
-        #        raise ConfigError, "'tag' option is required on df input"
       end
       if !@run_interval
         raise ConfigError, "'run_interval' option is required on df input"
@@ -39,7 +38,6 @@ module Fluent
     def start
       @finished = false
       @thread = Thread.new(&method(:run_periodic))
-
     end
 
     def shutdown
