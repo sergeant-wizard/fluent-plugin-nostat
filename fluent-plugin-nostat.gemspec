@@ -3,12 +3,12 @@
 
 Gem::Specification.new do |s|
   s.name = "fluent-plugin-nostat"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["No JinHo"]
-  s.date = "2016-03-10"
+  s.date = "2016-03-15"
   s.email = "nozino@gmail.com"
   s.extra_rdoc_files = [
     "LICENSE.txt",

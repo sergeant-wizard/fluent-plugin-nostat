@@ -138,7 +138,7 @@ module Fluent
           record["cpu"] = get_cpu_stat
           record["disk"] = get_disk_stat
           record["net"] = get_net_stat
-          record["mem"] = get_cpu_stat
+          record["mem"] = get_mem_stat
 
           log.info "ret=", record
 
