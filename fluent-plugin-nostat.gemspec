@@ -3,7 +3,7 @@
 
 Gem::Specification.new do |s|
   s.name = "fluent-plugin-nostat"
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     "lib/fluent/plugin/in_nostat.rb",
   ]
   s.homepage = "http://github.com/nozino/fluent-plugin-nostat"
-  s.rubygems_version = "2.4.5"
+  s.rubygems_version = "2.0.14"
   s.summary = "Linux Resource Monitoring Input plugin for Fluent event collector"
 
   if s.respond_to? :specification_version then

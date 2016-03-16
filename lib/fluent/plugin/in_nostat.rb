@@ -7,18 +7,18 @@ module Fluent
     @@DISK_STAT = "/proc/diskstats"
     @@NET_STAT = "/proc/net/dev"
 
-    @@CPU_USR = 0
-    @@CPU_SYS = 2
-    @@CPU_IDL = 3
-    @@CPU_WAI = 4
-    @@CPU_SIQ = 6
-    @@CPU_HIQ = 5
+    @@CPU_USR = 1
+    @@CPU_SYS = 3
+    @@CPU_IDL = 4
+    @@CPU_WAI = 5
+    @@CPU_HIQ = 6
+    @@CPU_SIQ = 7
     
     def initialize
       super
       require 'fluent/timezone'
     end
-
+n
     config_param :tag_prefix, :string, :default => nil
     config_param :tag, :string, :default => nil
     config_param :run_interval, :time, :default => nil
@@ -119,8 +119,8 @@ module Fluent
           next
         end
 
-        net["recv"] = items[1]
-        net["send"] = items[9]
+        net["recv"] = items[1].strip.to_i
+        net["send"] = items[9].strip.to_i
 
         res[name] = net
       end
@@ -139,8 +139,6 @@ module Fluent
           record["disk"] = get_disk_stat
           record["net"] = get_net_stat
           record["mem"] = get_mem_stat
-
-          log.info "ret=", record
 
           emit_tag = @tag.dup
           time = Engine.now
