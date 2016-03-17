@@ -173,8 +173,8 @@ module Fluent
       disk = {}
 
       disk_stat.each do |key, value|
-        disk["read"] = (value["read"] - @@history["disk"][key]["read"]) * @@LINUX_SECTOR_SIZE_BYTE
-        disk["write"] = (value["write"] - @@history["disk"][key]["write"]) * @@LINUX_SECTOR_SIZE_BYTE
+        disk["read"] = (((value["read"] - @@history["disk"][key]["read"]) * @@LINUX_SECTOR_SIZE_BYTE) / @run_interval).ceil
+        disk["write"] = (((value["write"] - @@history["disk"][key]["write"]) * @@LINUX_SECTOR_SIZE_BYTE) / @run_interval).ceil
         res[key] = disk
       end
 
@@ -186,8 +186,8 @@ module Fluent
       net = {}
 
       net_stat.each do |key, value|
-        net["recv"] = (value["recv"] - @@history["net"][key]["recv"])
-        net["send"] = (value["send"] - @@history["net"][key]["send"])
+        net["recv"] = (((value["recv"] - @@history["net"][key]["recv"])) / @run_interval).ceil
+        net["send"] = (((value["send"] - @@history["net"][key]["send"])) / @run_interval).ceil
         res[key] = net
       end
 
