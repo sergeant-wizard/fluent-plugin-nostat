@@ -17,9 +17,9 @@ $ gem install fluent-plugin-nostat
   mode dstat # raw or dstat
 </source>
 ```
-* **mode** : raw or dstat
-  **raw** : just get the values from /proc/{STATS}
-  **dstat** : modify the values as dstat
+* **mode** : raw or dstat.
+**raw** : just get the values from /proc/{STATS}.
+**dstat** : modify the values as dstat.
 
 ## output
 the raw stats from /proc directory.
