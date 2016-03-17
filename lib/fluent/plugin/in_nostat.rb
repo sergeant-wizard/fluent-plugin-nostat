@@ -1,5 +1,5 @@
 module Fluent
-  class NostatInput < Input
+n  class NostatInput < Input
     Plugin.register_input('nostat', self)
 
     @@CPU_STAT = "/proc/stat"
@@ -13,22 +13,26 @@ module Fluent
     @@CPU_WAI = 5
     @@CPU_HIQ = 6
     @@CPU_SIQ = 7
-    
+
+    @@LINUX_SECTOR_SIZE_BYTE = 512
+
+    @@history = {}
+
     def initialize
       super
       require 'fluent/timezone'
     end
-n
+
     config_param :tag_prefix, :string, :default => nil
     config_param :tag, :string, :default => nil
     config_param :run_interval, :time, :default => nil
+    config_param :mode, :string, :default => "raw"
 
     def configure(conf)
       super
 
       if !@tag
         @tag = @tag_prefix + `hostname`.strip.split('.')[0].strip + ".nostat"
-        log.info "tag=", @tag
       end
       if !@run_interval
         raise ConfigError, "'run_interval' option is required on df input"
@@ -36,6 +40,11 @@ n
     end
 
     def start
+      if ( @mode == "dstat" )
+        @@history = get_stats
+        sleep @run_interval
+      end
+
       @finished = false
       @thread = Thread.new(&method(:run_periodic))
     end
@@ -50,12 +59,12 @@ n
 
       first = File.foreach(@@CPU_STAT).first.split
 
-      res["usr"] = first[@@CPU_USR].strip.to_i
-      res["sys"] = first[@@CPU_SYS].strip.to_i
-      res["idl"] = first[@@CPU_IDL].strip.to_i
-      res["wai"] = first[@@CPU_WAI].strip.to_i
-      res["siq"] = first[@@CPU_SIQ].strip.to_i
-      res["hiq"] = first[@@CPU_HIQ].strip.to_i
+      res["usr"] = first[@@CPU_USR].strip.to_f
+      res["sys"] = first[@@CPU_SYS].strip.to_f
+      res["idl"] = first[@@CPU_IDL].strip.to_f
+      res["wai"] = first[@@CPU_WAI].strip.to_f
+      res["siq"] = first[@@CPU_SIQ].strip.to_f
+      res["hiq"] = first[@@CPU_HIQ].strip.to_f
 
       res
     end
@@ -63,14 +72,17 @@ n
     def get_mem_stat
       res = {}
       used = 0
+      total = 0
 
       File.foreach(@@MEM_STAT) do |line|
         items = line.split
         name = items[0].split(':').first
 
+
         case name
           when "MemTotal"
-          res["total"] = items[1].strip.to_i
+#          res["total"] = items[1].strip.to_i
+          total = items[1].strip.to_i
           when "MemFree"
           res["free"] = items[1].strip.to_i
           when "Buffers"
@@ -81,7 +93,7 @@ n
         end
       end
 
-      res["used"] = res["total"] - res["free"] - res["buff"] - res["cach"]
+      res["used"] = total - res["free"] - res["buff"] - res["cach"]
       res
     end
 
@@ -93,8 +105,8 @@ n
         if ( items[2] =~ /^[hsv]d[a-z]$/ )
           disk = {}
 
-          disk["read"] = items[5]
-          disk["write"] = items[9]
+          disk["read"] = items[5].strip.to_i
+          disk["write"] = items[9].strip.to_i
 
           res[items[2]] = disk
         end
@@ -128,17 +140,95 @@ n
       res
     end
 
+    def get_dstat_cpu (cpu_stat)
+      res = {}
+      total = 0
+      cpu_stat.each do |key, value|
+        res[key] = value - @@history["cpu"][key]
+        total += res[key]
+      end
+        
+      res.each do |key,value|
+        if ( key == "idl" )
+          res[key] = (res[key] / total * 100).floor
+        else
+          res[key] = (res[key] / total * 100).ceil
+        end
+      end
+      
+      res
+    end
+
+    def get_dstat_mem (mem_stat)
+      res = {}
+      mem_stat.each do |key, value|
+        res[key] = value * 1024
+      end
+
+      res
+    end
+
+    def get_dstat_disk (disk_stat)
+      res = {}
+      disk = {}
+
+      disk_stat.each do |key, value|
+        disk["read"] = (value["read"] - @@history["disk"][key]["read"]) * @@LINUX_SECTOR_SIZE_BYTE
+        disk["write"] = (value["write"] - @@history["disk"][key]["write"]) * @@LINUX_SECTOR_SIZE_BYTE
+        res[key] = disk
+      end
+
+      res
+    end
+
+    def get_dstat_net (net_stat)
+      res = {}
+      net = {}
+
+      net_stat.each do |key, value|
+        net["recv"] = (value["recv"] - @@history["net"][key]["recv"])
+        net["send"] = (value["send"] - @@history["net"][key]["send"])
+        res[key] = net
+      end
+
+      res
+    end
+
+    def get_dstat_record (stat)
+      record = {}
+      record["cpu"] = get_dstat_cpu (stat["cpu"])
+      record["mem"] = get_dstat_mem (stat["mem"])
+      record["disk"] = get_dstat_disk (stat["disk"])
+      record["net"] = get_dstat_net (stat["net"])
+
+      @@history = stat
+
+      record
+    end
+
+    def get_stats
+      stat = {}
+
+      stat["cpu"] = get_cpu_stat
+      stat["disk"] = get_disk_stat
+      stat["net"] = get_net_stat
+      stat["mem"] = get_mem_stat
+      
+      stat
+    end
+
     def run_periodic
       until @finished
         begin
           sleep @run_interval
 
-          record = {}
+          stat = get_stats
 
-          record["cpu"] = get_cpu_stat
-          record["disk"] = get_disk_stat
-          record["net"] = get_net_stat
-          record["mem"] = get_mem_stat
+          if (mode == "dstat")
+            record = get_dstat_record (stat)
+          else
+            record = stat
+          end
 
           emit_tag = @tag.dup
           time = Engine.now
