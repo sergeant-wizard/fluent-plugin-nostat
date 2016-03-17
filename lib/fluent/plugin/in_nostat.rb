@@ -1,5 +1,5 @@
 module Fluent
-n  class NostatInput < Input
+  class NostatInput < Input
     Plugin.register_input('nostat', self)
 
     @@CPU_STAT = "/proc/stat"
