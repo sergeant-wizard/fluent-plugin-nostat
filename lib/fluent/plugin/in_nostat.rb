@@ -1,3 +1,7 @@
+#
+# by nozino (nozino@gamil.com)
+#
+
 module Fluent
   class NostatInput < Input
     Plugin.register_input('nostat', self)
@@ -27,6 +31,7 @@ module Fluent
     config_param :tag, :string, :default => nil
     config_param :run_interval, :time, :default => nil
     config_param :mode, :string, :default => "raw"
+    config_param :output_type, :string, :default => "hash"
 
     def configure(conf)
       super
