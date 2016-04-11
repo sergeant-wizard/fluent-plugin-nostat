@@ -46,6 +46,11 @@ cpu={"usr"=>0, "sys"=>0, "idl"=>100, "wai"=>0, "siq"=>0, "hiq"=>0} mem={"free"=>
 ```
 
 ### graphite output style
+graphite output type is for [fluent-plugin-graphite](https://github.com/studio3104/fluent-plugin-graphite). To use this output type, graphite plugin should be installed by following command. There is no dependancy for that plugin yet.
+```
+gem install fluent-plugin-graphite
+```
+
 * full configuration example
 ```
 <source>
