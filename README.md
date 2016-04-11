@@ -1,5 +1,5 @@
 # fluent-plugin-nostat
-fluent plugin for system resource monitoring whithout dstat
+[fluentd](http://www.fluentd.org/) plugin for system resource monitoring whithout dstat
 
 ## Installation
 install with gem command as:
