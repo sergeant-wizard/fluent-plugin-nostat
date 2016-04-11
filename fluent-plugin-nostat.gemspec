@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
-# stub: fluent-plugin-nostat 0.1.1 ruby lib
+# stub: fluent-plugin-nostat 0.2.1 ruby lib
 
 Gem::Specification.new do |s|
   s.name = "fluent-plugin-nostat"
-  s.version = "0.1.1"
+  s.version = "0.2.1"
 
   s.require_paths = ["lib"]
   s.authors = ["No JinHo"]

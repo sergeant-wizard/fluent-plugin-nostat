@@ -40,7 +40,7 @@ module Fluent
         @tag = @tag_prefix + `hostname`.strip.split('.')[0].strip + ".nostat"
       end
       if !@run_interval
-        raise ConfigError, "'run_interval' option is required on df input"
+        raise ConfigError, "'run_interval' option is required on nostat input"
       end
     end
 
@@ -222,6 +222,42 @@ module Fluent
       stat
     end
 
+    def emit_graphite_style (time, record)
+      # cpu
+      tag = @tag + ".cpu"
+      router.emit(tag, time, record["cpu"])
+      
+      # memory
+      tag = @tag + ".mem"
+      router.emit(tag, time, record["mem"])
+
+      # disk
+      tag_prefix = @tag + ".disk"
+
+      record["disk"].each do |key, value|
+        tag = tag_prefix + "." + key
+        router.emit(tag, time, value)
+      end
+      
+      # net
+      tag_prefix = @tag + ".net"
+
+      record["net"].each do |key, value|
+        tag = tag_prefix + "." + key
+        router.emit(tag, time, value)
+      end
+    end
+
+    def emit_record (time, record)
+      if @output_type == "graphite"
+        emit_graphite_style(time, record)
+      elsif @output_type == "hash"
+        router.emit(@tag, time, record)       
+      else
+        log.error "invalid output_type. output_type=", @output_type
+      end
+    end
+
     def run_periodic
       until @finished
         begin
@@ -235,10 +271,10 @@ module Fluent
             record = stat
           end
 
-          emit_tag = @tag.dup
           time = Engine.now
+          
+          emit_record(time,record)
 
-          router.emit(@tag, time, record)
         rescue => e
           log.error "nostat failed to emit", :error => e.to_s, :error_class => e.class.to_s, :tag => tag
           log.error "nostat to run or shutdown child process", :error => $!.to_s, :error_class => $!.class.to_s
