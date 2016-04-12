@@ -122,7 +122,6 @@ module Fluent
 
     def get_net_stat
       res = {}
-      net = {}
 
       File.foreach(@@NET_STAT).with_index do |line, index|
         if ( index < 2 )
@@ -136,10 +135,13 @@ module Fluent
           next
         end
 
+        net = {}
+
         net["recv"] = items[1].strip.to_i
         net["send"] = items[9].strip.to_i
 
         res[name] = net
+
       end
 
       res
@@ -175,9 +177,9 @@ module Fluent
 
     def get_dstat_disk (disk_stat)
       res = {}
-      disk = {}
 
       disk_stat.each do |key, value|
+        disk = {}
         disk["read"] = (((value["read"] - @@history["disk"][key]["read"]) * @@LINUX_SECTOR_SIZE_BYTE) / @run_interval).ceil
         disk["write"] = (((value["write"] - @@history["disk"][key]["write"]) * @@LINUX_SECTOR_SIZE_BYTE) / @run_interval).ceil
         res[key] = disk
@@ -188,9 +190,9 @@ module Fluent
 
     def get_dstat_net (net_stat)
       res = {}
-      net = {}
 
       net_stat.each do |key, value|
+        net = {}
         net["recv"] = (((value["recv"] - @@history["net"][key]["recv"])) / @run_interval).ceil
         net["send"] = (((value["send"] - @@history["net"][key]["send"])) / @run_interval).ceil
         res[key] = net
@@ -274,7 +276,6 @@ module Fluent
           time = Engine.now
           
           emit_record(time,record)
-
         rescue => e
           log.error "nostat failed to emit", :error => e.to_s, :error_class => e.class.to_s, :tag => tag
           log.error "nostat to run or shutdown child process", :error => $!.to_s, :error_class => $!.class.to_s
