@@ -1,5 +1,5 @@
 #
-# by nozino (nozino@gamil.com)
+# by nozino (nozino@gmail.com)
 #
 
 module Fluent
