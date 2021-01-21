@@ -1,3 +1,4 @@
+require 'fluent/plugin/input'
 #
 # by nozino (nozino@gmail.com)
 #
